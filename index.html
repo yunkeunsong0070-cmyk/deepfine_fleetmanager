@@ -328,6 +328,22 @@ tbody tr:last-child td{border-bottom:none}
 .vcard-meta span i{margin-right:4px;color:var(--df-primary)}
 .vcard-actions{display:flex;gap:6px}
 .vcard-actions .btn{flex:1;justify-content:center}
+.vcard-actions .btn.icon-only{flex:0 0 36px;padding:0;width:36px;height:34px}
+.btn-danger-outline{border:1px solid var(--line);background:#fff;color:var(--danger)}
+.btn-danger-outline:hover{border-color:var(--danger);background:var(--danger-soft)}
+
+/* Confirm dialog */
+.confirm-icon{width:52px;height:52px;border-radius:50%;background:var(--danger-soft);color:var(--danger);display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 14px}
+.confirm-text{text-align:center;font-size:14px;color:var(--text-sub);margin-bottom:4px}
+.confirm-target{text-align:center;font-size:15px;font-weight:700;margin-bottom:18px;color:var(--text)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#dc2626;box-shadow:0 4px 12px rgba(239,68,68,.3)}
+
+/* Row action */
+.row-action-btn{width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-sub);background:transparent;font-size:12px}
+.row-action-btn:hover{background:var(--bg);color:var(--text)}
+.row-action-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}
+.action-group{display:inline-flex;gap:4px;justify-content:flex-end;width:100%}
 
 /* ============ Form ============ */
 .form-row{margin-bottom:16px}
@@ -760,129 +776,10 @@ tbody tr:last-child td{border-bottom:none}
   <div class="filter-bar">
     <select class="select"><option>전체 차량 (24)</option><option>운행 가능 (18)</option><option>운행중 (4)</option><option>정비중 (2)</option></select>
     <select class="select"><option>전체 차종</option><option>승용차</option><option>SUV</option><option>전기차</option><option>승합차</option></select>
-    <button class="btn btn-primary" style="margin-left:auto"><i class="fa-solid fa-plus" style="font-size:11px"></i>차량 등록</button>
+    <button class="btn btn-primary" style="margin-left:auto" onclick="openVehicleModal()"><i class="fa-solid fa-plus" style="font-size:11px"></i>차량 등록</button>
   </div>
 
-  <div class="vehicle-grid">
-    <div class="vcard">
-      <div class="vcard-img">
-        <i class="fa-solid fa-car-side"></i>
-        <span class="chip success status"><span class="status-dot success"></span>운행 가능</span>
-      </div>
-      <div class="vcard-body">
-        <div class="vcard-plate">12가 3456 · 현대</div>
-        <div class="vcard-name">소나타 DN8</div>
-        <div class="vcard-meta">
-          <span><i class="fa-solid fa-road"></i>34,520km</span>
-          <span><i class="fa-solid fa-gas-pump"></i>가솔린</span>
-          <span><i class="fa-solid fa-users"></i>5인</span>
-        </div>
-        <div class="vcard-actions">
-          <button class="btn btn-outline btn-sm">상세</button>
-          <button class="btn btn-primary btn-sm" onclick="openReservationModal()">예약</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="vcard">
-      <div class="vcard-img">
-        <i class="fa-solid fa-van-shuttle" style="color:var(--df-primary)"></i>
-        <span class="chip brand status"><span class="status-dot warn"></span>운행중</span>
-      </div>
-      <div class="vcard-body">
-        <div class="vcard-plate">45나 7890 · 기아</div>
-        <div class="vcard-name">카니발 KA4</div>
-        <div class="vcard-meta">
-          <span><i class="fa-solid fa-road"></i>67,830km</span>
-          <span><i class="fa-solid fa-gas-pump"></i>디젤</span>
-          <span><i class="fa-solid fa-users"></i>9인</span>
-        </div>
-        <div class="vcard-actions">
-          <button class="btn btn-outline btn-sm">상세</button>
-          <button class="btn btn-secondary btn-sm" disabled>예약불가</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="vcard">
-      <div class="vcard-img">
-        <i class="fa-solid fa-bolt-lightning" style="color:var(--df-accent)"></i>
-        <span class="chip success status"><span class="status-dot success"></span>운행 가능</span>
-      </div>
-      <div class="vcard-body">
-        <div class="vcard-plate">67다 1234 · 현대</div>
-        <div class="vcard-name">아이오닉5</div>
-        <div class="vcard-meta">
-          <span><i class="fa-solid fa-road"></i>12,450km</span>
-          <span><i class="fa-solid fa-bolt"></i>전기 84%</span>
-          <span><i class="fa-solid fa-users"></i>5인</span>
-        </div>
-        <div class="vcard-actions">
-          <button class="btn btn-outline btn-sm">상세</button>
-          <button class="btn btn-primary btn-sm" onclick="openReservationModal()">예약</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="vcard">
-      <div class="vcard-img">
-        <i class="fa-solid fa-car" style="color:var(--df-primary)"></i>
-        <span class="chip success status"><span class="status-dot success"></span>운행 가능</span>
-      </div>
-      <div class="vcard-body">
-        <div class="vcard-plate">89라 5678 · 현대</div>
-        <div class="vcard-name">그랜저 GN7</div>
-        <div class="vcard-meta">
-          <span><i class="fa-solid fa-road"></i>45,210km</span>
-          <span><i class="fa-solid fa-gas-pump"></i>HEV</span>
-          <span><i class="fa-solid fa-users"></i>5인</span>
-        </div>
-        <div class="vcard-actions">
-          <button class="btn btn-outline btn-sm">상세</button>
-          <button class="btn btn-primary btn-sm" onclick="openReservationModal()">예약</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="vcard">
-      <div class="vcard-img">
-        <i class="fa-solid fa-van-shuttle" style="color:var(--warn)"></i>
-        <span class="chip warn status"><span class="status-dot warn"></span>예약중</span>
-      </div>
-      <div class="vcard-body">
-        <div class="vcard-plate">11마 2345 · 현대</div>
-        <div class="vcard-name">스타리아</div>
-        <div class="vcard-meta">
-          <span><i class="fa-solid fa-road"></i>23,890km</span>
-          <span><i class="fa-solid fa-gas-pump"></i>디젤</span>
-          <span><i class="fa-solid fa-users"></i>11인</span>
-        </div>
-        <div class="vcard-actions">
-          <button class="btn btn-outline btn-sm">상세</button>
-          <button class="btn btn-primary btn-sm" onclick="openReservationModal()">예약</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="vcard">
-      <div class="vcard-img">
-        <i class="fa-solid fa-car-burst" style="color:var(--danger)"></i>
-        <span class="chip danger status"><span class="status-dot danger"></span>정비중</span>
-      </div>
-      <div class="vcard-body">
-        <div class="vcard-plate">22바 6789 · 기아</div>
-        <div class="vcard-name">K5</div>
-        <div class="vcard-meta">
-          <span><i class="fa-solid fa-road"></i>89,120km</span>
-          <span><i class="fa-solid fa-gas-pump"></i>가솔린</span>
-          <span><i class="fa-solid fa-users"></i>5인</span>
-        </div>
-        <div class="vcard-actions">
-          <button class="btn btn-outline btn-sm">상세</button>
-          <button class="btn btn-secondary btn-sm" disabled>정비중</button>
-        </div>
-      </div>
-    </div>
+  <div class="vehicle-grid" id="vehicleGrid">
   </div>
 </section>
 
@@ -1177,45 +1074,15 @@ tbody tr:last-child td{border-bottom:none}
   <div class="filter-bar">
     <select class="select"><option>전체 부서</option><option>영업팀</option><option>마케팅</option><option>개발팀</option><option>인사팀</option></select>
     <select class="select"><option>면허 상태</option><option>유효</option><option>만료 임박</option></select>
-    <button class="btn btn-primary" style="margin-left:auto"><i class="fa-solid fa-plus" style="font-size:11px"></i>운전자 등록</button>
+    <button class="btn btn-primary" style="margin-left:auto" onclick="openDriverModal()"><i class="fa-solid fa-plus" style="font-size:11px"></i>운전자 등록</button>
   </div>
 
   <div class="panel">
     <table>
       <thead>
-        <tr><th>운전자</th><th>부서 / 직급</th><th>연락처</th><th>면허번호</th><th>면허만기</th><th>총 운행</th><th>사고이력</th><th></th></tr>
+        <tr><th>운전자</th><th>부서 / 직급</th><th>연락처</th><th>면허번호</th><th>면허만기</th><th>총 운행</th><th>사고이력</th><th style="text-align:right;padding-right:22px">관리</th></tr>
       </thead>
-      <tbody>
-        <tr>
-          <td><div class="row-avatar"><div class="av">박</div><div><div class="cell-strong">박지훈</div><div class="cell-sub">jihoon@deepfine.com</div></div></div></td>
-          <td>영업팀 / 과장</td><td>010-1234-5678</td><td>12-34-567890-01</td><td>2028-03-15</td><td>42회 / 1,820km</td>
-          <td><span class="chip success">무사고</span></td>
-          <td><button class="btn btn-ghost btn-sm"><i class="fa-solid fa-ellipsis"></i></button></td>
-        </tr>
-        <tr>
-          <td><div class="row-avatar"><div class="av" style="background:var(--success-soft);color:#047857">이</div><div><div class="cell-strong">이수민</div><div class="cell-sub">sumin@deepfine.com</div></div></div></td>
-          <td>마케팅팀 / 대리</td><td>010-2345-6789</td><td>23-45-678901-02</td><td>2027-11-20</td><td>28회 / 1,240km</td>
-          <td><span class="chip success">무사고</span></td>
-          <td><button class="btn btn-ghost btn-sm"><i class="fa-solid fa-ellipsis"></i></button></td>
-        </tr>
-        <tr>
-          <td><div class="row-avatar"><div class="av" style="background:var(--df-accent-soft);color:var(--df-accent)">최</div><div><div class="cell-strong">최영재</div><div class="cell-sub">youngjae@deepfine.com</div></div></div></td>
-          <td>개발팀 / 책임</td><td>010-3456-7890</td><td>34-56-789012-03</td><td>2029-07-05</td><td>35회 / 2,100km</td>
-          <td><span class="chip success">무사고</span></td>
-          <td><button class="btn btn-ghost btn-sm"><i class="fa-solid fa-ellipsis"></i></button></td>
-        </tr>
-        <tr>
-          <td><div class="row-avatar"><div class="av" style="background:var(--warn-soft);color:#b45309">정</div><div><div class="cell-strong">정아름</div><div class="cell-sub">areum@deepfine.com</div></div></div></td>
-          <td>대표이사실 / 대표</td><td>010-4567-8901</td><td>45-67-890123-04</td><td>2026-09-30</td><td>58회 / 3,420km</td>
-          <td><span class="chip success">무사고</span></td>
-          <td><button class="btn btn-ghost btn-sm"><i class="fa-solid fa-ellipsis"></i></button></td>
-        </tr>
-        <tr>
-          <td><div class="row-avatar"><div class="av">김</div><div><div class="cell-strong">김도현</div><div class="cell-sub">dohyun@deepfine.com</div></div></div></td>
-          <td>인사팀 / 사원</td><td>010-5678-9012</td><td>56-78-901234-05</td><td>2026-07-15</td><td>15회 / 680km</td>
-          <td><span class="chip warn">경미 1회</span></td>
-          <td><button class="btn btn-ghost btn-sm"><i class="fa-solid fa-ellipsis"></i></button></td>
-        </tr>
+      <tbody id="driverTbody">
       </tbody>
     </table>
   </div>
@@ -1405,10 +1272,458 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<!-- ============== Vehicle Modal ============== -->
+<div class="modal-bg" id="vehicleModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="vehicleModalTitle">차량 등록</div>
+      <button class="modal-close" onclick="closeModal('vehicleModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="vehicleEditId"/>
+      <div class="form-row cols-2">
+        <div>
+          <label class="label">차량번호 <span class="req">*</span></label>
+          <input type="text" id="vPlate" class="input" placeholder="예: 12가 3456"/>
+        </div>
+        <div>
+          <label class="label">제조사 <span class="req">*</span></label>
+          <select id="vMaker" class="select">
+            <option>현대</option><option>기아</option><option>제네시스</option>
+            <option>쌌웨</option><option>쌌성</option><option>BMW</option>
+            <option>벤츠</option><option>아우디</option><option>테슬라</option><option>기타</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div>
+          <label class="label">모델명 <span class="req">*</span></label>
+          <input type="text" id="vModel" class="input" placeholder="예: 소나타 DN8"/>
+        </div>
+        <div>
+          <label class="label">차종</label>
+          <select id="vType" class="select">
+            <option>승용차</option><option>SUV</option><option>승합차</option><option>특수차</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row cols-3">
+        <div>
+          <label class="label">연료</label>
+          <select id="vFuel" class="select">
+            <option>가솔린</option><option>디젤</option><option>LPG</option>
+            <option>HEV</option><option>전기</option><option>수소</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">정원</label>
+          <select id="vSeats" class="select">
+            <option>2인</option><option>4인</option><option>5인</option>
+            <option>7인</option><option>9인</option><option>11인</option><option>15인</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">현재 주행거리 (km)</label>
+          <input type="number" id="vMileage" class="input" value="0" min="0"/>
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div>
+          <label class="label">상태</label>
+          <select id="vStatus" class="select">
+            <option value="available">운행 가능</option>
+            <option value="in-use">운행중</option>
+            <option value="reserved">예약중</option>
+            <option value="maintenance">정비중</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">취득일</label>
+          <input type="date" id="vAcquired" class="input"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="label">색상 / 메모</label>
+        <input type="text" id="vNote" class="input" placeholder="예: 화이트 / 임원용"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('vehicleModal')">취소</button>
+      <button class="btn btn-primary" onclick="saveVehicle()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============== Driver Modal ============== -->
+<div class="modal-bg" id="driverModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="driverModalTitle">운전자 등록</div>
+      <button class="modal-close" onclick="closeModal('driverModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="driverEditId"/>
+      <div class="form-row cols-2">
+        <div>
+          <label class="label">이름 <span class="req">*</span></label>
+          <input type="text" id="dName" class="input" placeholder="예: 홍길동"/>
+        </div>
+        <div>
+          <label class="label">이메일 <span class="req">*</span></label>
+          <input type="email" id="dEmail" class="input" placeholder="name@deepfine.com"/>
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div>
+          <label class="label">부서 <span class="req">*</span></label>
+          <select id="dDept" class="select">
+            <option>경영지원실</option><option>영업팀</option><option>마케팅팀</option>
+            <option>개발팀</option><option>인사팀</option><option>R&D</option>
+            <option>대표이사실</option><option>기타</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">직급</label>
+          <select id="dRank" class="select">
+            <option>사원</option><option>대리</option><option>과장</option>
+            <option>차장</option><option>부장</option><option>책임</option>
+            <option>이사</option><option>대표</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div>
+          <label class="label">연락처 <span class="req">*</span></label>
+          <input type="text" id="dPhone" class="input" placeholder="010-1234-5678"/>
+        </div>
+        <div>
+          <label class="label">면허번호 <span class="req">*</span></label>
+          <input type="text" id="dLicense" class="input" placeholder="12-34-567890-01"/>
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div>
+          <label class="label">면허 종류</label>
+          <select id="dLicenseType" class="select">
+            <option>1종 보통</option><option>2종 보통</option>
+            <option>1종 대형</option><option>1종 특수</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">면허 만기일</label>
+          <input type="date" id="dExpiry" class="input"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="label">사고 이력 / 비고</label>
+        <select id="dAccident" class="select">
+          <option value="none">무사고</option>
+          <option value="minor">경미 1회</option>
+          <option value="moderate">사고 2회 이상</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('driverModal')">취소</button>
+      <button class="btn btn-primary" onclick="saveDriver()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============== Confirm Delete Modal ============== -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-body" style="padding-top:28px">
+      <div class="confirm-icon"><i class="fa-solid fa-trash"></i></div>
+      <div class="confirm-text" id="confirmText">아래 항목을 삭제하시겠습니까?</div>
+      <div class="confirm-target" id="confirmTarget">-</div>
+      <div style="text-align:center;font-size:12px;color:var(--text-sub)">삭제된 데이터는 복구할 수 없습니다.</div>
+    </div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn btn-outline" onclick="closeModal('confirmModal')">취소</button>
+      <button class="btn btn-danger" id="confirmOkBtn">삭제</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toastMsg">저장되었습니다.</span></div>
 
 <script>
+// ============ Data Store ============
+let vehicles = [
+  {id:1, plate:'12가 3456', maker:'현대', model:'소나타 DN8', type:'승용차', fuel:'가솔린', seats:'5인', mileage:34520, status:'available', acquired:'2023-03-15', note:''},
+  {id:2, plate:'45나 7890', maker:'기아', model:'카니벌 KA4', type:'승합차', fuel:'디젤', seats:'9인', mileage:67830, status:'in-use', acquired:'2022-07-10', note:''},
+  {id:3, plate:'67다 1234', maker:'현대', model:'아이오닉5', type:'SUV', fuel:'전기', seats:'5인', mileage:12450, status:'available', acquired:'2024-05-20', note:'배터리 84%'},
+  {id:4, plate:'89라 5678', maker:'현대', model:'그랜저 GN7', type:'승용차', fuel:'HEV', seats:'5인', mileage:45210, status:'available', acquired:'2023-09-01', note:'임원용'},
+  {id:5, plate:'11마 2345', maker:'현대', model:'스타리아', type:'승합차', fuel:'디젤', seats:'11인', mileage:23890, status:'reserved', acquired:'2024-01-12', note:''},
+  {id:6, plate:'22바 6789', maker:'기아', model:'K5', type:'승용차', fuel:'가솔린', seats:'5인', mileage:89120, status:'maintenance', acquired:'2021-04-05', note:''},
+];
+let vehicleIdSeq = 7;
+
+let drivers = [
+  {id:1, name:'박지훈', email:'jihoon@deepfine.com', dept:'영업팀', rank:'과장', phone:'010-1234-5678', license:'12-34-567890-01', licenseType:'1종 보통', expiry:'2028-03-15', accident:'none', trips:42, distance:1820},
+  {id:2, name:'이수민', email:'sumin@deepfine.com', dept:'마케팅팀', rank:'대리', phone:'010-2345-6789', license:'23-45-678901-02', licenseType:'2종 보통', expiry:'2027-11-20', accident:'none', trips:28, distance:1240},
+  {id:3, name:'최영재', email:'youngjae@deepfine.com', dept:'개발팀', rank:'책임', phone:'010-3456-7890', license:'34-56-789012-03', licenseType:'1종 보통', expiry:'2029-07-05', accident:'none', trips:35, distance:2100},
+  {id:4, name:'정아름', email:'areum@deepfine.com', dept:'대표이사실', rank:'대표', phone:'010-4567-8901', license:'45-67-890123-04', licenseType:'1종 보통', expiry:'2026-09-30', accident:'none', trips:58, distance:3420},
+  {id:5, name:'김도현', email:'dohyun@deepfine.com', dept:'인사팀', rank:'사원', phone:'010-5678-9012', license:'56-78-901234-05', licenseType:'2종 보통', expiry:'2026-07-15', accident:'minor', trips:15, distance:680},
+];
+let driverIdSeq = 6;
+
+// ============ Vehicle CRUD ============
+const statusMeta = {
+  'available':   {label:'운행 가능', chip:'success', dot:'success'},
+  'in-use':      {label:'운행중',   chip:'brand',   dot:'warn'},
+  'reserved':    {label:'예약중',   chip:'warn',    dot:'warn'},
+  'maintenance': {label:'정비중',   chip:'danger',  dot:'danger'},
+};
+function iconForVehicle(v){
+  if(v.fuel==='전기'||v.fuel==='수소') return ['fa-solid fa-bolt-lightning','var(--df-accent)'];
+  if(v.type==='승합차') return ['fa-solid fa-van-shuttle','var(--df-primary)'];
+  if(v.type==='SUV') return ['fa-solid fa-car-side','var(--df-primary)'];
+  if(v.status==='maintenance') return ['fa-solid fa-car-burst','var(--danger)'];
+  return ['fa-solid fa-car-side','#CDD2E1'];
+}
+function renderVehicles(){
+  const grid = document.getElementById('vehicleGrid');
+  if(!grid) return;
+  if(vehicles.length===0){
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--text-sub)">
+      <i class="fa-solid fa-car-side" style="font-size:38px;color:#CDD2E1;margin-bottom:10px"></i>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">등록된 차량이 없습니다</div>
+      <div style="font-size:12px">우측 상단 [차량 등록] 버튼을 눌러 추가하세요</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = vehicles.map(v=>{
+    const s = statusMeta[v.status];
+    const [icon,color] = iconForVehicle(v);
+    const disabled = v.status==='maintenance' || v.status==='in-use';
+    return `<div class="vcard">
+      <div class="vcard-img">
+        <i class="${icon}" style="color:${color}"></i>
+        <span class="chip ${s.chip} status"><span class="status-dot ${s.dot}"></span>${s.label}</span>
+      </div>
+      <div class="vcard-body">
+        <div class="vcard-plate">${v.plate} · ${v.maker}</div>
+        <div class="vcard-name">${v.model}</div>
+        <div class="vcard-meta">
+          <span><i class="fa-solid fa-road"></i>${v.mileage.toLocaleString()}km</span>
+          <span><i class="fa-solid fa-gas-pump"></i>${v.fuel}</span>
+          <span><i class="fa-solid fa-users"></i>${v.seats}</span>
+        </div>
+        <div class="vcard-actions">
+          ${disabled
+            ? `<button class="btn btn-secondary btn-sm" disabled>${v.status==='in-use'?'운행중':'정비중'}</button>`
+            : `<button class="btn btn-primary btn-sm" onclick="openReservationModal()">예약</button>`}
+          <button class="btn btn-outline btn-sm icon-only" onclick="openVehicleModal(${v.id})" title="수정"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger-outline btn-sm icon-only" onclick="confirmDeleteVehicle(${v.id})" title="삭제"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openVehicleModal(id){
+  const modal = document.getElementById('vehicleModal');
+  const title = document.getElementById('vehicleModalTitle');
+  const editIdEl = document.getElementById('vehicleEditId');
+  if(id){
+    const v = vehicles.find(x=>x.id===id);
+    if(!v) return;
+    title.textContent = '차량 수정';
+    editIdEl.value = id;
+    document.getElementById('vPlate').value = v.plate;
+    document.getElementById('vMaker').value = v.maker;
+    document.getElementById('vModel').value = v.model;
+    document.getElementById('vType').value = v.type;
+    document.getElementById('vFuel').value = v.fuel;
+    document.getElementById('vSeats').value = v.seats;
+    document.getElementById('vMileage').value = v.mileage;
+    document.getElementById('vStatus').value = v.status;
+    document.getElementById('vAcquired').value = v.acquired || '';
+    document.getElementById('vNote').value = v.note || '';
+  } else {
+    title.textContent = '차량 등록';
+    editIdEl.value = '';
+    ['vPlate','vModel','vNote'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('vMileage').value = 0;
+    document.getElementById('vAcquired').value = new Date().toISOString().slice(0,10);
+  }
+  modal.classList.add('show');
+}
+function saveVehicle(){
+  const plate = document.getElementById('vPlate').value.trim();
+  const model = document.getElementById('vModel').value.trim();
+  if(!plate || !model){ toast('차량번호와 모델명을 입력해주세요.','error'); return; }
+  const data = {
+    plate, model,
+    maker: document.getElementById('vMaker').value,
+    type: document.getElementById('vType').value,
+    fuel: document.getElementById('vFuel').value,
+    seats: document.getElementById('vSeats').value,
+    mileage: parseInt(document.getElementById('vMileage').value)||0,
+    status: document.getElementById('vStatus').value,
+    acquired: document.getElementById('vAcquired').value,
+    note: document.getElementById('vNote').value.trim(),
+  };
+  const editId = document.getElementById('vehicleEditId').value;
+  if(editId){
+    const idx = vehicles.findIndex(x=>x.id==editId);
+    if(idx>=0) vehicles[idx] = {...vehicles[idx], ...data};
+    toast('차량 정보가 수정되었습니다.');
+  } else {
+    vehicles.unshift({id:vehicleIdSeq++, ...data});
+    toast('새 차량이 등록되었습니다.');
+  }
+  renderVehicles();
+  closeModal('vehicleModal');
+}
+function confirmDeleteVehicle(id){
+  const v = vehicles.find(x=>x.id===id);
+  if(!v) return;
+  openConfirm({
+    text: '아래 차량을 삭제하시겠습니까?',
+    target: `${v.model} (${v.plate})`,
+    onOk: ()=>{
+      vehicles = vehicles.filter(x=>x.id!==id);
+      renderVehicles();
+      toast('차량이 삭제되었습니다.');
+    }
+  });
+}
+
+// ============ Driver CRUD ============
+const accidentMeta = {
+  'none':     {label:'무사고',     chip:'success'},
+  'minor':    {label:'경미 1회',     chip:'warn'},
+  'moderate': {label:'사고 2회+',   chip:'danger'},
+};
+function avatarColor(name){
+  const palettes = [
+    'background:var(--df-primary-soft);color:var(--df-primary)',
+    'background:var(--success-soft);color:#047857',
+    'background:var(--df-accent-soft);color:var(--df-accent)',
+    'background:var(--warn-soft);color:#b45309',
+    'background:var(--danger-soft);color:#b91c1c',
+  ];
+  const code = name.charCodeAt(0) || 0;
+  return palettes[code % palettes.length];
+}
+function renderDrivers(){
+  const tbody = document.getElementById('driverTbody');
+  if(!tbody) return;
+  if(drivers.length===0){
+    tbody.innerHTML = `<tr><td colspan="8" style="padding:60px 20px;text-align:center;color:var(--text-sub)">
+      <i class="fa-regular fa-user" style="font-size:32px;color:#CDD2E1;display:block;margin-bottom:10px"></i>
+      <div style="font-weight:600;color:var(--text)">등록된 운전자가 없습니다</div>
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = drivers.map(d=>{
+    const a = accidentMeta[d.accident] || accidentMeta.none;
+    return `<tr>
+      <td>
+        <div class="row-avatar">
+          <div class="av" style="${avatarColor(d.name)}">${d.name[0]}</div>
+          <div><div class="cell-strong">${d.name}</div><div class="cell-sub">${d.email}</div></div>
+        </div>
+      </td>
+      <td>${d.dept} / ${d.rank}</td>
+      <td>${d.phone}</td>
+      <td>${d.license}</td>
+      <td>${d.expiry}</td>
+      <td>${d.trips}회 / ${d.distance.toLocaleString()}km</td>
+      <td><span class="chip ${a.chip}">${a.label}</span></td>
+      <td style="text-align:right">
+        <div class="action-group">
+          <button class="row-action-btn" onclick="openDriverModal(${d.id})" title="수정"><i class="fa-solid fa-pen"></i></button>
+          <button class="row-action-btn danger" onclick="confirmDeleteDriver(${d.id})" title="삭제"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function openDriverModal(id){
+  const modal = document.getElementById('driverModal');
+  const title = document.getElementById('driverModalTitle');
+  const editIdEl = document.getElementById('driverEditId');
+  if(id){
+    const d = drivers.find(x=>x.id===id);
+    if(!d) return;
+    title.textContent = '운전자 수정';
+    editIdEl.value = id;
+    document.getElementById('dName').value = d.name;
+    document.getElementById('dEmail').value = d.email;
+    document.getElementById('dDept').value = d.dept;
+    document.getElementById('dRank').value = d.rank;
+    document.getElementById('dPhone').value = d.phone;
+    document.getElementById('dLicense').value = d.license;
+    document.getElementById('dLicenseType').value = d.licenseType;
+    document.getElementById('dExpiry').value = d.expiry;
+    document.getElementById('dAccident').value = d.accident;
+  } else {
+    title.textContent = '운전자 등록';
+    editIdEl.value = '';
+    ['dName','dEmail','dPhone','dLicense'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('dExpiry').value = '';
+    document.getElementById('dAccident').value = 'none';
+  }
+  modal.classList.add('show');
+}
+function saveDriver(){
+  const name = document.getElementById('dName').value.trim();
+  const email = document.getElementById('dEmail').value.trim();
+  const phone = document.getElementById('dPhone').value.trim();
+  const license = document.getElementById('dLicense').value.trim();
+  if(!name || !email || !phone || !license){ toast('필수 항목을 모두 입력해주세요.','error'); return; }
+  const data = {
+    name, email, phone, license,
+    dept: document.getElementById('dDept').value,
+    rank: document.getElementById('dRank').value,
+    licenseType: document.getElementById('dLicenseType').value,
+    expiry: document.getElementById('dExpiry').value,
+    accident: document.getElementById('dAccident').value,
+  };
+  const editId = document.getElementById('driverEditId').value;
+  if(editId){
+    const idx = drivers.findIndex(x=>x.id==editId);
+    if(idx>=0) drivers[idx] = {...drivers[idx], ...data};
+    toast('운전자 정보가 수정되었습니다.');
+  } else {
+    drivers.unshift({id:driverIdSeq++, ...data, trips:0, distance:0});
+    toast('새 운전자가 등록되었습니다.');
+  }
+  renderDrivers();
+  closeModal('driverModal');
+}
+function confirmDeleteDriver(id){
+  const d = drivers.find(x=>x.id===id);
+  if(!d) return;
+  openConfirm({
+    text: '아래 운전자를 삭제하시겠습니까?',
+    target: `${d.name} (${d.dept} / ${d.rank})`,
+    onOk: ()=>{
+      drivers = drivers.filter(x=>x.id!==id);
+      renderDrivers();
+      toast('운전자가 삭제되었습니다.');
+    }
+  });
+}
+
+// ============ Confirm Dialog ============
+function openConfirm({text, target, onOk}){
+  document.getElementById('confirmText').textContent = text;
+  document.getElementById('confirmTarget').textContent = target;
+  const btn = document.getElementById('confirmOkBtn');
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener('click', ()=>{
+    closeModal('confirmModal');
+    onOk && onOk();
+  });
+  document.getElementById('confirmModal').classList.add('show');
+}
+
 // ============ Login ============
 const ADMIN_ID = 'deepfine';
 const ADMIN_PW = 'deepfine';
@@ -1424,6 +1739,8 @@ function handleLogin(e){
     document.getElementById('app').style.display = 'flex';
     initCharts();
     buildCalendar();
+    renderVehicles();
+    renderDrivers();
   } else {
     err.classList.add('show');
     document.getElementById('loginPw').value = '';
@@ -1471,9 +1788,17 @@ document.querySelectorAll('.modal-bg').forEach(bg=>{
   bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('show')});
 });
 
-function toast(msg){
+function toast(msg, type='success'){
   const t=document.getElementById('toast');
   document.getElementById('toastMsg').textContent=msg;
+  const icon = t.querySelector('i');
+  if(type==='error'){
+    icon.className = 'fa-solid fa-circle-exclamation';
+    icon.style.color = 'var(--danger)';
+  } else {
+    icon.className = 'fa-solid fa-circle-check';
+    icon.style.color = 'var(--success)';
+  }
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2400);
 }
