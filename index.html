@@ -1509,27 +1509,55 @@ function refreshAllSelects(){
   const driverOpts = DATA.drivers.map(d =>
     `<option value="${d.id}">${d.name} · ${d.dept}</option>`).join('');
 
+  // Helper: only rewrite options if the option set actually changed,
+  // and always preserve the user's current selection / focus.
+  const updateSelectPreserving = (sel, newHtml, fallbackValue) => {
+    if(!sel) return;
+    // Skip while user is interacting with this select to avoid losing input
+    if(document.activeElement === sel) return;
+    // Skip if the select belongs to a modal that is currently open and the user is editing it
+    // (we still need to update if options truly changed though)
+    if(sel.innerHTML === newHtml) return;
+    const cur = sel.value;
+    sel.innerHTML = newHtml;
+    // Try to restore previous selection; otherwise use fallback
+    if(cur && [...sel.options].some(o => o.value === cur)){
+      sel.value = cur;
+    } else if(fallbackValue !== undefined){
+      sel.value = fallbackValue;
+    }
+  };
+
   ['rVehicleId','lVehicleId','eVehicleId','mVehicleId'].forEach(id=>{
-    const sel = $(id); if(sel) sel.innerHTML = vehicleOpts;
+    updateSelectPreserving($(id), vehicleOpts);
   });
   ['rDriverId','lDriverId'].forEach(id=>{
-    const sel = $(id); if(sel) sel.innerHTML = driverOpts;
+    updateSelectPreserving($(id), driverOpts);
   });
 
-  // Filter selects
-  const vehFilter = $('resFilterVehicle');
-  if(vehFilter){
-    const cur = vehFilter.value;
-    vehFilter.innerHTML = '<option value="all">전체 차량</option>' + vehicleOpts;
-    vehFilter.value = cur || 'all';
-  }
+  // Filter selects (always have an 'all' fallback)
+  const vehFilterHtml = '<option value="all">전체 차량</option>' + vehicleOpts;
+  updateSelectPreserving($('resFilterVehicle'), vehFilterHtml, 'all');
+
   const deptSel = $('drvFilterDept');
-  if(deptSel){
+  if(deptSel && document.activeElement !== deptSel){
     const depts = [...new Set(DATA.drivers.map(d=>d.dept))];
-    const cur = deptSel.value;
-    deptSel.innerHTML = '<option value="all">전체 부서</option>' + depts.map(d=>`<option>${d}</option>`).join('');
-    deptSel.value = cur || 'all';
+    const newDeptHtml = '<option value="all">전체 부서</option>' + depts.map(d=>`<option>${d}</option>`).join('');
+    if(deptSel.innerHTML !== newDeptHtml){
+      const cur = deptSel.value;
+      deptSel.innerHTML = newDeptHtml;
+      if(cur && [...deptSel.options].some(o => o.value === cur)){
+        deptSel.value = cur;
+      } else {
+        deptSel.value = 'all';
+      }
+    }
   }
+}
+
+// ===== Pause cloud polling while user has a modal open =====
+function isAnyModalOpen(){
+  return !!document.querySelector('.modal-bg.show');
 }
 
 function updateNavBadges(){
@@ -3545,6 +3573,10 @@ function updateSyncBadge(state){
 
 async function cloudLoad(silent){
   if(!CLOUD_ENABLED || !CLOUD_CFG) return false;
+  // 사용자가 모달에서 입력 중일 때 silent 모드면 동기화 스킵
+  if(silent && typeof isAnyModalOpen === 'function' && isAnyModalOpen()){
+    return false;
+  }
   try{
     if(!silent) updateSyncBadge('syncing');
     const res = await fetch(cloudUrl(CLOUD_CFG.binId, true), {
@@ -3554,14 +3586,18 @@ async function cloudLoad(silent){
     const j = await res.json();
     const record = j.record || j;
     if(record && record.vehicles !== undefined){
-      _suppressNextSave = true;
-      DATA = record;
-      // ensure seq exists
-      if(!DATA.seq) DATA.seq = {vehicle:1,driver:1,reservation:1,log:1,expense:1,maint:1};
-      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA)); }catch(e){}
-      if(typeof recomputeVehicleStatuses === 'function') recomputeVehicleStatuses();
-      if(typeof syncAll === 'function') syncAll();
-      _suppressNextSave = false;
+      // 비교: 실제로 데이터가 변경된 경우에만 DATA 교체 (불필요한 렌더 방지)
+      const newSig = JSON.stringify(record);
+      const curSig = JSON.stringify(DATA);
+      if(newSig !== curSig){
+        _suppressNextSave = true;
+        DATA = record;
+        if(!DATA.seq) DATA.seq = {vehicle:1,driver:1,reservation:1,log:1,expense:1,maint:1};
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA)); }catch(e){}
+        if(typeof recomputeVehicleStatuses === 'function') recomputeVehicleStatuses();
+        if(typeof syncAll === 'function') syncAll();
+        _suppressNextSave = false;
+      }
     }
     _cloudLastSync = Date.now();
     updateSyncBadge('online');
@@ -3601,14 +3637,22 @@ function cloudSave(){
 
 function startCloudPolling(){
   stopCloudPolling();
-  // 8초마다 다른 사용자 변경사항 감지
+  // 8초마다 다른 사용자 변경사항 감지 — 단, 모달이 열려있거나 입력 중일 때는 패스
   _cloudPolling = setInterval(()=>{
-    if(document.hidden) return;  // 탭이 백그라운드면 패스
+    if(document.hidden) return;
+    // 모달이 열려있으면 동기화 보류 (사용자 입력 보호)
+    if(typeof isAnyModalOpen === 'function' && isAnyModalOpen()) return;
+    // 입력 요소에 포커스되어 있으면 패스
+    const ae = document.activeElement;
+    if(ae && (ae.tagName === 'INPUT' || ae.tagName === 'SELECT' || ae.tagName === 'TEXTAREA')) return;
     cloudLoad(true);
   }, 8000);
-  // 페이지 다시 활성화될 때 즉시 동기화
+  // 페이지 다시 활성화될 때 즉시 동기화 (모달 없을 때만)
   document.addEventListener('visibilitychange', ()=>{
-    if(!document.hidden && CLOUD_ENABLED) cloudLoad(true);
+    if(!document.hidden && CLOUD_ENABLED){
+      if(typeof isAnyModalOpen === 'function' && isAnyModalOpen()) return;
+      cloudLoad(true);
+    }
   });
 }
 function stopCloudPolling(){
