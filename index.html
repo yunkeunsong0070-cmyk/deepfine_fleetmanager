@@ -3430,6 +3430,344 @@ function bootApp(){
 
 window.addEventListener('load', ()=>{ $('loginId').focus(); });
 </script>
+
+<!-- ============== JSONBin Realtime Sync ============== -->
+<style>
+@keyframes df-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.sync-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:8px;font-size:11.5px;font-weight:600;margin-right:4px;transition:all .25s;white-space:nowrap;border:1px solid transparent}
+.sync-badge .sb-dot{width:7px;height:7px;border-radius:50%;animation:df-pulse 2s infinite}
+.sync-badge.online{background:#E7F8F1;color:#047857;border-color:#a7e9c8}
+.sync-badge.online .sb-dot{background:#10B981}
+.sync-badge.syncing{background:#EEF0FF;color:#4B5CFA;border-color:#c8cdff}
+.sync-badge.syncing .sb-dot{background:#4B5CFA}
+.sync-badge.offline{background:#FEECEC;color:#b91c1c;border-color:#f4b8b8}
+.sync-badge.offline .sb-dot{background:#EF4444;animation:none}
+.sync-badge.local{background:#FFF6E5;color:#b45309;border-color:#f5d496}
+.sync-badge.local .sb-dot{background:#F59E0B;animation:none}
+@media (max-width:640px){
+  .sync-badge{padding:4px 8px;font-size:10.5px}
+  .sync-badge .sb-text-full{display:none}
+}
+#setupModal .modal{max-width:540px}
+.setup-step{background:var(--bg);padding:12px 14px;border-radius:8px;margin-bottom:10px;font-size:12.5px;line-height:1.6}
+.setup-step b{color:var(--df-primary)}
+.setup-step a{color:var(--df-primary);text-decoration:underline}
+.setup-step code{background:#fff;padding:2px 6px;border-radius:4px;font-size:11px;color:var(--text);border:1px solid var(--line)}
+</style>
+
+<!-- Cloud Setup Modal -->
+<div class="modal-bg" id="cloudSetupModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title"><i class="fa-solid fa-cloud" style="color:var(--df-primary);margin-right:8px"></i>실시간 공유 DB 연결</div>
+      <button class="modal-close" onclick="closeModal('cloudSetupModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:16px;padding:14px;background:var(--success-soft);color:#047857;border-radius:var(--radius);font-size:13px;line-height:1.6">
+        <i class="fa-solid fa-circle-check"></i> <b>팀 공유 DB가 이미 연결되어 있습니다.</b><br/>
+        링크에 접속한 모든 팀원이 동일한 데이터를 실시간으로 공유합니다. 별도 설정이 필요 없습니다.
+      </div>
+      <div style="margin-bottom:16px;font-size:12px;color:var(--text-sub);line-height:1.6">
+        아래 정보는 시스템에 미리 설정된 값이며 수정할 필요가 없습니다. 다른 Bin으로 변경하려면 값을 수정 후 [연결] 버튼을 누르세요.
+      </div>
+
+      <div class="setup-step"><b>① JSONBin 가입</b> (무료) → <a href="https://jsonbin.io/signup" target="_blank">jsonbin.io/signup</a></div>
+      <div class="setup-step"><b>② API Key 복사</b><br/>로그인 → 우측 상단 프로필 → <b>API Keys</b> → <code>X-MASTER-KEY</code> 복사</div>
+      <div class="setup-step"><b>③ Bin 만들기</b><br/>좌측 메뉴 <b>Bins</b> → <b>CREATE BIN</b> → 아래 JSON 붙여넣기 → <b>CREATE</b><br/>
+        <code style="display:block;margin-top:6px;padding:8px;white-space:pre-wrap;font-size:10.5px">{"vehicles":[],"drivers":[],"reservations":[],"logs":[],"expenses":[],"maintenances":[],"seq":{"vehicle":1,"driver":1,"reservation":1,"log":1,"expense":1,"maint":1}}</code>
+        생성된 URL의 마지막 부분(<b>Bin ID</b>)을 복사
+      </div>
+      <div class="setup-step"><b>④ 아래 두 칸에 입력</b> → 한 번만 설정하면 자동 저장됩니다</div>
+
+      <div class="form-row" style="margin-top:16px">
+        <label class="label">Bin ID <span class="req">*</span></label>
+        <input type="text" id="cloudBinId" class="input" placeholder="예: 65f8a3b1abc..." autocomplete="off"/>
+      </div>
+      <div class="form-row">
+        <label class="label">X-MASTER-KEY <span class="req">*</span></label>
+        <input type="password" id="cloudApiKey" class="input" placeholder="$2a$10$..." autocomplete="off"/>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-sub);background:var(--df-primary-soft);padding:10px 12px;border-radius:8px">
+        <i class="fa-solid fa-shield-halved" style="color:var(--df-primary)"></i>
+        API Key는 본인 브라우저에만 저장되며 어디에도 전송되지 않습니다. 팀원 4명 각자 한 번씩만 입력하면 됩니다.
+      </div>
+    </div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn btn-outline" onclick="cloudSkip()">건너뛰기 (로컬만 사용)</button>
+      <button class="btn btn-primary" onclick="cloudConnect()"><i class="fa-solid fa-link"></i>연결</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+ * JSONBin Realtime Cloud Sync
+ * ============================================================ */
+const CLOUD_KEY_STORE = 'df_fleet_cloud_v1';
+// === Hardcoded JSONBin credentials (auto-connect on login) ===
+const HARDCODED_BIN_ID  = '6a3015d3f5f4af5e29f5d246';
+const HARDCODED_API_KEY = '$2a$10$5ihhDhI.Q.7.IFIun4dMmOGYuoVv87bY1wCWwJHWNod6NSeje5cLW';
+let CLOUD_CFG = { binId: HARDCODED_BIN_ID, apiKey: HARDCODED_API_KEY };
+let CLOUD_ENABLED = true;
+let _cloudSaveTimer = null;
+let _cloudLastSync = 0;
+let _cloudPolling = null;
+let _suppressNextSave = false;
+
+function getCloudCfg(){
+  try{
+    const raw = localStorage.getItem(CLOUD_KEY_STORE);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function setCloudCfg(cfg){
+  if(cfg) localStorage.setItem(CLOUD_KEY_STORE, JSON.stringify(cfg));
+  else localStorage.removeItem(CLOUD_KEY_STORE);
+}
+function cloudUrl(binId, latest=false){
+  return `https://api.jsonbin.io/v3/b/${binId}${latest?'/latest':''}`;
+}
+
+function updateSyncBadge(state){
+  const badge = document.getElementById('cloudSyncBadge');
+  if(!badge) return;
+  const map = {
+    online:   {cls:'online',  text:'실시간 동기화', icon:'fa-cloud'},
+    syncing:  {cls:'syncing', text:'동기화 중...', icon:'fa-cloud-arrow-up'},
+    offline:  {cls:'offline', text:'연결 끊김',     icon:'fa-cloud-bolt'},
+    local:    {cls:'local',   text:'로컬 모드',     icon:'fa-hard-drive'}
+  };
+  const m = map[state] || map.local;
+  badge.className = 'sync-badge ' + m.cls;
+  badge.innerHTML = `<span class="sb-dot"></span><i class="fa-solid ${m.icon}" style="font-size:10px"></i><span class="sb-text-full">${m.text}</span>`;
+  badge.title = m.text;
+}
+
+async function cloudLoad(silent){
+  if(!CLOUD_ENABLED || !CLOUD_CFG) return false;
+  try{
+    if(!silent) updateSyncBadge('syncing');
+    const res = await fetch(cloudUrl(CLOUD_CFG.binId, true), {
+      headers:{'X-Master-Key': CLOUD_CFG.apiKey, 'X-Bin-Meta':'false'}
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const j = await res.json();
+    const record = j.record || j;
+    if(record && record.vehicles !== undefined){
+      _suppressNextSave = true;
+      DATA = record;
+      // ensure seq exists
+      if(!DATA.seq) DATA.seq = {vehicle:1,driver:1,reservation:1,log:1,expense:1,maint:1};
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA)); }catch(e){}
+      if(typeof recomputeVehicleStatuses === 'function') recomputeVehicleStatuses();
+      if(typeof syncAll === 'function') syncAll();
+      _suppressNextSave = false;
+    }
+    _cloudLastSync = Date.now();
+    updateSyncBadge('online');
+    return true;
+  }catch(e){
+    console.warn('[Cloud] load failed:', e);
+    updateSyncBadge('offline');
+    return false;
+  }
+}
+
+function cloudSave(){
+  if(!CLOUD_ENABLED || !CLOUD_CFG) return;
+  if(_suppressNextSave){ _suppressNextSave = false; return; }
+  clearTimeout(_cloudSaveTimer);
+  updateSyncBadge('syncing');
+  _cloudSaveTimer = setTimeout(async ()=>{
+    try{
+      const res = await fetch(cloudUrl(CLOUD_CFG.binId), {
+        method:'PUT',
+        headers:{
+          'Content-Type':'application/json',
+          'X-Master-Key': CLOUD_CFG.apiKey,
+          'X-Bin-Versioning':'false'
+        },
+        body: JSON.stringify(DATA)
+      });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      _cloudLastSync = Date.now();
+      updateSyncBadge('online');
+    }catch(e){
+      console.warn('[Cloud] save failed:', e);
+      updateSyncBadge('offline');
+    }
+  }, 800);
+}
+
+function startCloudPolling(){
+  stopCloudPolling();
+  // 8초마다 다른 사용자 변경사항 감지
+  _cloudPolling = setInterval(()=>{
+    if(document.hidden) return;  // 탭이 백그라운드면 패스
+    cloudLoad(true);
+  }, 8000);
+  // 페이지 다시 활성화될 때 즉시 동기화
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden && CLOUD_ENABLED) cloudLoad(true);
+  });
+}
+function stopCloudPolling(){
+  if(_cloudPolling){ clearInterval(_cloudPolling); _cloudPolling = null; }
+}
+
+function cloudSkip(){
+  closeModal('cloudSetupModal');
+  CLOUD_ENABLED = false;
+  updateSyncBadge('local');
+  toast('로컬 모드로 사용합니다. 우측 상단 클라우드 아이콘으로 언제든 연결할 수 있습니다.');
+}
+
+async function cloudConnect(){
+  const binId = document.getElementById('cloudBinId').value.trim();
+  const apiKey = document.getElementById('cloudApiKey').value.trim();
+  if(!binId || !apiKey){
+    toast('Bin ID와 API Key를 모두 입력해주세요.','error');
+    return;
+  }
+  // 연결 테스트
+  updateSyncBadge('syncing');
+  try{
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+      headers:{'X-Master-Key': apiKey}
+    });
+    if(!res.ok) throw new Error('인증 실패 (' + res.status + ')');
+    const j = await res.json();
+    const record = j.record || j;
+
+    // Bin이 비어있거나 구조가 다르면 현재 DATA를 업로드
+    const hasValidStructure = record && Array.isArray(record.vehicles);
+
+    CLOUD_CFG = {binId, apiKey};
+    setCloudCfg(CLOUD_CFG);
+    CLOUD_ENABLED = true;
+
+    if(hasValidStructure && record.vehicles.length > 0){
+      // 기존 클라우드 데이터 사용
+      _suppressNextSave = true;
+      DATA = record;
+      if(!DATA.seq) DATA.seq = {vehicle:1,driver:1,reservation:1,log:1,expense:1,maint:1};
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA)); }catch(e){}
+      if(typeof recomputeVehicleStatuses === 'function') recomputeVehicleStatuses();
+      if(typeof syncAll === 'function') syncAll();
+      _suppressNextSave = false;
+      toast('클라우드 연결 완료! 팀의 최신 데이터를 불러왔습니다.');
+    } else {
+      // 현재 로컬 데이터를 클라우드에 업로드
+      await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Master-Key': apiKey,'X-Bin-Versioning':'false'},
+        body: JSON.stringify(DATA)
+      });
+      toast('클라우드 연결 완료! 현재 데이터를 업로드했습니다.');
+    }
+
+    updateSyncBadge('online');
+    closeModal('cloudSetupModal');
+    startCloudPolling();
+  }catch(e){
+    updateSyncBadge('local');
+    toast('연결 실패: ' + e.message + ' — Bin ID와 API Key를 확인하세요.','error');
+  }
+}
+
+function openCloudSetup(){
+  const cfg = getCloudCfg();
+  if(cfg){
+    document.getElementById('cloudBinId').value = cfg.binId || '';
+    document.getElementById('cloudApiKey').value = cfg.apiKey || '';
+  }
+  document.getElementById('cloudSetupModal').classList.add('show');
+}
+
+function cloudDisconnect(){
+  CLOUD_ENABLED = false;
+  CLOUD_CFG = null;
+  setCloudCfg(null);
+  stopCloudPolling();
+  updateSyncBadge('local');
+  toast('클라우드 연결을 해제했습니다. 로컬 모드로 동작합니다.');
+}
+
+// ===== Hook into existing saveData =====
+(function(){
+  const origSave = window.saveData;
+  window.saveData = function(){
+    if(typeof origSave === 'function') origSave.apply(this, arguments);
+    cloudSave();
+  };
+})();
+
+// ===== Hook into bootApp to load cloud data on login =====
+(function(){
+  const origBoot = window.bootApp;
+  window.bootApp = async function(){
+    // 기존 부팅
+    if(typeof origBoot === 'function') origBoot.apply(this, arguments);
+
+    // 하드코딩된 자격 증명으로 즉시 연결
+    CLOUD_CFG = { binId: HARDCODED_BIN_ID, apiKey: HARDCODED_API_KEY };
+    CLOUD_ENABLED = true;
+    setCloudCfg(CLOUD_CFG);
+    updateSyncBadge('syncing');
+    const loaded = await cloudLoad(false);
+    if(loaded){
+      startCloudPolling();
+    } else {
+      // 클라우드 첫 사용 — 현재 로컬 데이터를 업로드
+      try{
+        await fetch(`https://api.jsonbin.io/v3/b/${HARDCODED_BIN_ID}`, {
+          method:'PUT',
+          headers:{'Content-Type':'application/json','X-Master-Key':HARDCODED_API_KEY,'X-Bin-Versioning':'false'},
+          body: JSON.stringify(DATA)
+        });
+        updateSyncBadge('online');
+        startCloudPolling();
+      }catch(e){
+        updateSyncBadge('offline');
+        console.warn('[Cloud] initial upload failed', e);
+      }
+    }
+  };
+})();
+
+// ===== Inject sync badge + setup button into topbar =====
+window.addEventListener('load', ()=>{
+  const topbar = document.querySelector('.topbar-actions');
+  if(!topbar) return;
+  // Sync badge
+  const badge = document.createElement('button');
+  badge.id = 'cloudSyncBadge';
+  badge.className = 'sync-badge local';
+  badge.innerHTML = '<span class="sb-dot"></span><i class="fa-solid fa-hard-drive" style="font-size:10px"></i><span class="sb-text-full">로컬 모드</span>';
+  badge.onclick = openCloudSetup;
+  badge.title = '클릭하여 실시간 공유 설정';
+  topbar.insertBefore(badge, topbar.firstChild);
+
+  // Add disconnect option to settings page
+  setTimeout(()=>{
+    const settingsPanel = document.querySelector('#settings .panel-body');
+    if(settingsPanel && !document.getElementById('cloudSettingsBlock')){
+      const block = document.createElement('div');
+      block.id = 'cloudSettingsBlock';
+      block.style.cssText = 'margin-top:14px;padding-top:14px;border-top:1px solid var(--line)';
+      block.innerHTML = `
+        <div style="font-size:12.5px;font-weight:600;margin-bottom:10px">☁️ 실시간 공유 DB</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-outline" onclick="openCloudSetup()" style="justify-content:flex-start"><i class="fa-solid fa-cloud"></i>JSONBin 연결 설정</button>
+          <button class="btn btn-danger-outline" onclick="cloudDisconnect()" style="justify-content:flex-start"><i class="fa-solid fa-link-slash"></i>클라우드 연결 해제</button>
+        </div>
+      `;
+      settingsPanel.appendChild(block);
+    }
+  }, 800);
+});
+</script>
+
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
